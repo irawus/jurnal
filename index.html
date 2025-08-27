@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Jurnal Pendampingan</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #6c757d;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #4facfe;
+            border-bottom: 3px solid #4facfe;
+        }
+        
+        .tab:hover {
+            background: #e9ecef;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .form-section {
+            display: none;
+        }
+        
+        .form-section.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 1rem;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+        }
+        
+        .report-section {
+            display: none;
+        }
+        
+        .report-section.active {
+            display: block;
+        }
+        
+        .report-preview {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .report-content {
+            padding: 40px;
+            font-family: 'Times New Roman', serif;
+            line-height: 1.6;
+        }
+        
+        .report-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 12px;
+        }
+        
+        .report-table th,
+        .report-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        
+        .report-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .signature-section {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .signature-box {
+            text-align: center;
+            width: 45%;
+        }
+        
+        .signature-line {
+            margin-top: 80px;
+            border-bottom: 1px solid #000;
+            margin-bottom: 5px;
+        }
+        
+        .entry-list {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .entry-item {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .entry-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .entry-header {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        
+        .entry-details {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .no-entries {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 40px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .signature-section {
+                flex-direction: column;
+                gap: 40px;
+            }
+            
+            .signature-box {
+                width: 100%;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+            
+            .header, .tabs, .controls {
+                display: none;
+            }
+            
+            .content {
+                padding: 0;
+            }
+            
+            .report-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Jurnal Pendampingan</h1>
+            <p>Sistem Pembinan Satuan Pendidikan Binaan</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('form')">📝 Input Data</button>
+            <button class="tab" onclick="showTab('report')">📊 Laporan</button>
+        </div>
+        
+        <div class="content">
+            <!-- Form Section -->
+            <div id="form-section" class="form-section active">
+                <h2 style="margin-bottom: 30px; color: #495057;">Input Data Jurnal</h2>
+                
+                <form id="journalForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tanggal">Tanggal</label>
+                            <input type="date" id="tanggal" required onchange="updateHari()">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="hari">Hari</label>
+                            <input type="text" id="hari" readonly style="background-color: #f8f9fa;" placeholder="Pilih tanggal terlebih dahulu">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="namaSekolah">Nama Sekolah</label>
+                            <select id="namaSekolah" required onchange="updateKepalaSekolah()">
+                                <option value="">Pilih Sekolah</option>
+                                <option value="SMKS Ma'arif NU Gumukmas">SMKS Ma'arif NU Gumukmas</option>
+                                <option value="SMKS Minqu">SMKS Minqu</option>
+                                <option value="SMKS Al Masruroh">SMKS Al Masruroh</option>
+                                <option value="SMKS Al Kholily">SMKS Al Kholily</option>
+                                <option value="SMKS Darussalam">SMKS Darussalam</option>
+                                <option value="SMKS Perikanan Pertanian Terpadu">SMKS Perikanan Pertanian Terpadu</option>
+                                <option value="SMKS Bustanul Ulum Al Yaqin Wassurur">SMKS Bustanul Ulum Al Yaqin Wassurur</option>
+                                <option value="SMKS Nurul Hikmah">SMKS Nurul Hikmah</option>
+                                <option value="SMKS Al Ikhwaniyah">SMKS Al Ikhwaniyah</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="kepalaSekolah">Nama Kepala Sekolah</label>
+                            <input type="text" id="kepalaSekolah" readonly style="background-color: #f8f9fa;">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="hasilCatatan">Hasil/Catatan</label>
+                        <textarea id="hasilCatatan" placeholder="Masukkan hasil atau catatan kegiatan pendampingan..." required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn">💾 Simpan Data</button>
+                </form>
+                
+                <div class="entry-list" style="margin-top: 30px;">
+                    <h3 style="margin-bottom: 20px; color: #495057;">Data yang Tersimpan</h3>
+                    <div id="entryList">
+                        <div class="no-entries">Belum ada data yang tersimpan</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Report Section -->
+            <div id="report-section" class="report-section">
+                <div class="controls">
+                    <button class="btn btn-success" onclick="generateReport()">🔄 Generate Laporan</button>
+                    <button class="btn btn-danger" onclick="downloadPDF()">📥 Download PDF</button>
+                    <button class="btn" onclick="clearAllData()">🗑️ Hapus Semua Data</button>
+                </div>
+                
+                <div class="report-preview" id="reportPreview">
+                    <div class="report-content" id="reportContent">
+                        <div class="no-entries">Klik "Generate Laporan" untuk membuat laporan</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data mapping sekolah dan kepala sekolah
+        const sekolahKepala = {
+            "SMKS Ma'arif NU Gumukmas": "Nurwahid, S.Pd.I., M.Pd.",
+            "SMKS Minqu": "Ahmad Ibnu Tamim Jazuli, S.Pd.",
+            "SMKS Al Masruroh": "Ribut Nila Indriani, S.Pd.",
+            "SMKS Al Kholily": "Arif Rahman Hakim, S.Pd.",
+            "SMKS Darussalam": "Mahmudi, S.Pd.I.",
+            "SMKS Perikanan Pertanian Terpadu": "Moch. Jaelani, S.Pd.",
+            "SMKS Bustanul Ulum Al Yaqin Wassurur": "Saiful Badri, S.Pd.",
+            "SMKS Nurul Hikmah": "Wiwit Sri Winarti, S.Pd.",
+            "SMKS Al Ikhwaniyah": "M. Syafi'uddin, M.Pd."
+        };
+
+        // Array untuk menyimpan data jurnal
+        let journalData = JSON.parse(localStorage.getItem('journalData')) || [];
+
+        // Update kepala sekolah otomatis
+        function updateKepalaSekolah() {
+            const sekolah = document.getElementById('namaSekolah').value;
+            const kepalaSekolah = document.getElementById('kepalaSekolah');
+            kepalaSekolah.value = sekolahKepala[sekolah] || '';
+        }
+
+        // Update hari otomatis berdasarkan tanggal
+        function updateHari() {
+            const tanggalInput = document.getElementById('tanggal').value;
+            const hariInput = document.getElementById('hari');
+            
+            if (tanggalInput) {
+                const date = new Date(tanggalInput);
+                const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                hariInput.value = days[date.getDay()];
+            } else {
+                hariInput.value = '';
+            }
+        }
+
+        // Show tab function
+        function showTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update sections
+            document.querySelectorAll('.form-section, .report-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(tabName + '-section').classList.add('active');
+            
+            if (tabName === 'form') {
+                updateEntryList();
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('journalForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                id: Date.now(),
+                hari: document.getElementById('hari').value,
+                tanggal: document.getElementById('tanggal').value,
+                namaSekolah: document.getElementById('namaSekolah').value,
+                kepalaSekolah: document.getElementById('kepalaSekolah').value,
+                hasilCatatan: document.getElementById('hasilCatatan').value
+            };
+            
+            journalData.push(formData);
+            localStorage.setItem('journalData', JSON.stringify(journalData));
+            
+            // Reset form
+            this.reset();
+            document.getElementById('kepalaSekolah').value = '';
+            document.getElementById('hari').value = '';
+            
+            // Update entry list
+            updateEntryList();
+            
+            alert('✅ Data berhasil disimpan!');
+        });
+
+        // Update entry list
+        function updateEntryList() {
+            const entryList = document.getElementById('entryList');
+            
+            if (journalData.length === 0) {
+                entryList.innerHTML = '<div class="no-entries">Belum ada data yang tersimpan</div>';
+                return;
+            }
+            
+            entryList.innerHTML = journalData.map((entry, index) => `
+                <div class="entry-item">
+                    <div class="entry-header">${entry.hari}, ${formatDate(entry.tanggal)} - ${entry.namaSekolah}</div>
+                    <div class="entry-details">
+                        <strong>Kepala Sekolah:</strong> ${entry.kepalaSekolah}<br>
+                        <strong>Catatan:</strong> ${entry.hasilCatatan}
+                    </div>
+                    <button onclick="deleteEntry(${entry.id})" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin-top: 10px; cursor: pointer;">🗑️ Hapus</button>
+                </div>
+            `).join('');
+        }
+
+        // Delete entry
+        function deleteEntry(id) {
+            if (confirm('Yakin ingin menghapus data ini?')) {
+                journalData = journalData.filter(entry => entry.id !== id);
+                localStorage.setItem('journalData', JSON.stringify(journalData));
+                updateEntryList();
+            }
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                          'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+        }
+
+        // Get month name
+        function getMonthName(dateString) {
+            const date = new Date(dateString);
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                          'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            return months[date.getMonth()];
+        }
+
+        // Format text with automatic numbering and hanging indent
+        function formatNumberedText(text) {
+            const lines = text.split('\n').filter(line => line.trim() !== '');
+            if (lines.length <= 1) {
+                return text;
+            }
+            return lines.map((line, index) => 
+                `<div style="display: flex; margin-bottom: 5px;">
+                    <span style="min-width: 20px; flex-shrink: 0;">${index + 1}.</span>
+                    <span style="flex: 1;">${line.trim()}</span>
+                </div>`
+            ).join('');
+        }
+
+        // Generate report
+        function generateReport() {
+            if (journalData.length === 0) {
+                alert('⚠️ Tidak ada data untuk dibuat laporan!');
+                return;
+            }
+            
+            // Get the month from the first entry (assuming all entries are from the same month)
+            const firstEntry = journalData[0];
+            const bulan = getMonthName(firstEntry.tanggal);
+            const tahun = new Date(firstEntry.tanggal).getFullYear();
+            
+            // Sort data by date
+            const sortedData = [...journalData].sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+            
+            const reportContent = `
+                <div class="report-title">
+                    JURNAL PENDAMPINGAN SATUAN PENDIDIKAN BINAAN<br>
+                    BULAN: ${bulan.toUpperCase()} ${tahun}
+                </div>
+                
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">No.</th>
+                            <th style="width: 10%;">Hari</th>
+                            <th style="width: 15%;">Tanggal</th>
+                            <th style="width: 25%;">Nama Sekolah</th>
+                            <th style="width: 20%;">Nama Kepala Sekolah</th>
+                            <th style="width: 25%;">Hasil/Catatan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sortedData.map((entry, index) => `
+                            <tr>
+                                <td style="text-align: center;">${index + 1}</td>
+                                <td>${entry.hari}</td>
+                                <td>${formatDate(entry.tanggal)}</td>
+                                <td>${entry.namaSekolah}</td>
+                                <td>${entry.kepalaSekolah}</td>
+                                <td>${formatNumberedText(entry.hasilCatatan)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                
+                <div style="margin-top: 40px; display: flex; justify-content: space-between;">
+                    <div style="width: 45%;">
+                        <div style="text-align: left; margin-top: 20px;">Pengawas Pembina</div>
+			<img src="ttd.png" alt="Deskripsi gambar" width="70" height="80">
+                        <div style="margin-top: 0px; text-align: left;"><strong>Dr. Suwari, S.Pd.I., M.Pd.</strong></div>
+                        <div style="border-bottom: 1px solid #000; width: 180px; margin-top: 5px;"></div>
+                    </div>
+                    <div style="width: 45%;">
+                        <div style="text-align: left;">Jember, ${formatDate(sortedData[sortedData.length - 1].tanggal)}</div>
+                        <div style="text-align: left;">Kepala ${sortedData[0].namaSekolah}</div>
+                        <div style="margin-top: 80px; text-align: left;"><strong>${sortedData[0].kepalaSekolah}</strong></div>
+                        <div style="border-bottom: 1px solid #000; width: 200px; margin-top: 5px;"></div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('reportContent').innerHTML = reportContent;
+        }
+
+        // Download PDF
+        function downloadPDF() {
+            const reportContent = document.getElementById('reportContent');
+            
+            if (reportContent.innerHTML.includes('Klik "Generate Laporan"')) {
+                alert('⚠️ Silakan generate laporan terlebih dahulu!');
+                return;
+            }
+            
+            // Create a new window for printing
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Jurnal Pendampingan</title>
+                    <style>
+                        @page {
+                            size: A4 landscape;
+                            margin: 1cm;
+                        }
+                        body {
+                            font-family: 'Times New Roman', serif;
+                            font-size: 12px;
+                            line-height: 1.4;
+                            margin: 0;
+                            padding: 20px;
+                        }
+                        .report-title {
+                            text-align: center;
+                            font-size: 16px;
+                            font-weight: bold;
+                            margin-bottom: 20px;
+                            text-transform: uppercase;
+                        }
+                        .report-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin: 20px 0;
+                        }
+                        .report-table th,
+                        .report-table td {
+                            border: 1px solid #000;
+                            padding: 8px;
+                            text-align: left;
+                            vertical-align: top;
+                        }
+                        .report-table th {
+                            background-color: #f0f0f0;
+                            font-weight: bold;
+                            text-align: center;
+                        }
+                        .signature-section {
+                            margin-top: 40px;
+                            display: flex;
+                            justify-content: space-between;
+                        }
+                        .signature-box {
+                            width: 45%;
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${reportContent.innerHTML}
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 250);
+        }
+
+        // Clear all data
+        function clearAllData() {
+            if (confirm('⚠️ Yakin ingin menghapus semua data? Tindakan ini tidak dapat dibatalkan!')) {
+                journalData = [];
+                localStorage.removeItem('journalData');
+                updateEntryList();
+                document.getElementById('reportContent').innerHTML = '<div class="no-entries">Klik "Generate Laporan" untuk membuat laporan</div>';
+                alert('✅ Semua data berhasil dihapus!');
+            }
+        }
+
+        // Initialize
+        updateEntryList();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97585117228af309',t:'MTc1NjI2MzYwNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
